@@ -1,26 +1,38 @@
-from flask import Flask, request, render_template, jsonify
 import datetime
-from pytz import timezone
+
+import pytz
+from flask import Flask, render_template
+
 app = Flask(__name__)
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
-@app.route('/<city>')
-def time(city):
-    if city == 'moscow':
-        zone_time = datetime.datetime.now('Europe/Moscow')
-        return render_template("time.html", city=city, time=zone_time.strftime('%H:%M'))
-    if city == 'berlin':
-        zone_time = datetime.datetime.now('Europe/Berlin')
-        return render_template("time.html", city=city, time=zone_time.strftime('%H:%M'))
-    if city == 'tokyo':
-        zone_time = datetime.datetime.now('Asia/Tokyo')
-        return render_template("time.html", city=city, time=zone_time.strftime('%H:%M'))
-    if city == 'newyork':
-        zone_time = datetime.datetime.now('America/New_York')
-        return render_template("time.html", city=city, time=zone_time.strftime('%H:%M'))
-    else:
-        return render_template("not_found.html")
 
-if __name__ == '__main__':
-    app.run()
+
+cityid_to_timezone = {
+    'moscow': 'Europe/Moscow',
+    'berlin': 'Europe/Berlin',
+    'tokyo': 'Asia/Tokyo',
+    'newyork': 'America/New_York',
+}
+
+cityid_to_cityname = {
+    'moscow': 'Moscow',
+    'berlin': 'Berlin',
+    'tokyo': 'Tokyo',
+    'newyork': 'New York',
+}
+
+
+@app.route('/<city_id>')
+def time(city_id):
+    if city_id in cityid_to_timezone:
+        tz = pytz.timezone(cityid_to_timezone[city_id])
+        zone_time = datetime.datetime.now(tz)
+        return render_template("time.html",
+                               city=cityid_to_cityname[city_id],
+                               time=zone_time.strftime('%H:%M'))
+    return render_template("not_found.html")
+
